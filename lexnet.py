@@ -12,14 +12,17 @@ def load_tsv(path):
 
     if path.endswith('.tsv'):
         df = pd.read_table(path)
-        df = df.drop(columns='morph')
+        if 'morph' in df :
+            df = df.drop(columns='morph')
     else:
         df = pd.read_table(path + '/' + os.listdir(path)[0])
-        df = df.drop(columns='morph')
+        if 'morph' in df :
+            df = df.drop(columns='morph')
         for filename in os.listdir(path)[1:] :
             if filename.endswith('.tsv') :
                 temp_df = pd.read_table(path + '/' + filename)
-                temp_df = temp_df.drop(columns='morph')
+                if 'morph' in temp_df :                
+                    temp_df = temp_df.drop(columns='morph')
                 df = pd.concat([df, temp_df], ignore_index=True)
 
     df['POS'] = df['POS'].str[0:3]
@@ -184,7 +187,7 @@ def fill_stat_df(df, freq_df, cofreq_df, coocc_list, n, arg, dtype):
 
 
 
-def build_graph(keylist, stat_df, freq_df, dtype, *args): 
+def build_graph(keylist, poslist, stat_df, freq_df, dtype, *args): 
 
     G = nx.Graph()
     
@@ -204,11 +207,11 @@ def build_graph(keylist, stat_df, freq_df, dtype, *args):
                 attr[j] = stat_df.index[j], freq_df.iloc[freq_df.index[(freq_df[dtype] == stat_df.index[j].split()[0]) & (freq_df['POS'] == stat_df.index[j].split()[1])].tolist()[0], 2]
 
     for p in attr.values() :
-        if p[0].split()[1] == 'VER':
-            colors.append('#b7addc')
-        elif p[0].split()[1] == 'NOM':
+        if p[0].split()[1] == poslist[0]:
             colors.append('#9fc4e4')
-        elif p[0].split()[1] == 'ADJ':
+        elif p[0].split()[1] == poslist[1]:
+            colors.append('#b7addc')
+        elif p[0].split()[1] == poslist[2]:
             colors.append('#fcc0f2')
         sizes.append(p[1] * 200)
         
@@ -273,7 +276,7 @@ def lexnet(keylist, path, poslist, n, arg, dtype, method):
 
     stat_df = fill_stat_df(df, freq_df, cofreq_df, coocc_list, n, arg, dtype)
 
-    return build_graph(keylist, stat_df, freq_df, dtype, method)
+    return build_graph(keylist, poslist, stat_df, freq_df, dtype, method)
 
 
 
