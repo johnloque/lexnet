@@ -264,19 +264,24 @@ def lexnet(keylist, path, poslist, n, arg, dtype, method):
     for i in range(len(keylist)) :
         coocc_list = build_coocc_list(keylist[i].split()[0], keylist[i].split()[1], df, n, dtype, coocc_list)
 
-    cofreq_df = build_cofreq_df(coocc_list)
+    if not coocc_list :
+        return nx.empty_graph(1)  
+    
 
-    if method == 'all':
-        reflist = coocc_list
-    else :
-        reflist = keylist
+    else:
+        cofreq_df = build_cofreq_df(coocc_list)
 
-    for i in range(len(reflist)) :
-        cofreq_df = fill_cofreq_df(reflist[i].split()[0], reflist[i].split()[1], cofreq_df, df, n, dtype)
+        if method == 'all':
+            reflist = coocc_list
+        else :
+            reflist = keylist
 
-    stat_df = fill_stat_df(df, freq_df, cofreq_df, coocc_list, n, arg, dtype)
+        for i in range(len(reflist)) :
+            cofreq_df = fill_cofreq_df(reflist[i].split()[0], reflist[i].split()[1], cofreq_df, df, n, dtype)
 
-    return build_graph(keylist, poslist, stat_df, freq_df, dtype, method)
+        stat_df = fill_stat_df(df, freq_df, cofreq_df, coocc_list, n, arg, dtype)
+
+        return build_graph(keylist, poslist, stat_df, freq_df, dtype, method)
 
 
 
@@ -285,59 +290,63 @@ def intersection(keylist, G, order):
 
     inter_list = []
     node_dic = {}
-    
-    for key in keylist :
-        neighbor_dic = {}
-        neighbor_list = [node for node in G.neighbors(key)]
-        neighbor_list.append(key)
-        neighbor_dic[0] = neighbor_list
-        for j in range(1,order):
-            for neighbor in neighbor_dic[j-1]:
-                neighbor_list += [nodebis for nodebis in G.neighbors(neighbor)]
-                neighbor_list.append(neighbor)
-                neighbor_list = list(set(neighbor_list))
-                neighbor_dic[j] = neighbor_list
-        node_dic[key] = neighbor_dic[order - 1]
-    
-    for item in node_dic[keylist[0]]:
-        i= 1 
-        while item in node_dic[keylist[i]] :
-            i += 1
+   
+    if len(G.nodes()) == 1 or len(keylist) < 2:
+        return inter_list, 0, 0
+
+    else :
+        for key in keylist :
+            neighbor_dic = {}
+            neighbor_list = [node for node in G.neighbors(key)]
+            neighbor_list.append(key)
+            neighbor_dic[0] = neighbor_list
+            for j in range(1,order):
+                for neighbor in neighbor_dic[j-1]:
+                    neighbor_list += [nodebis for nodebis in G.neighbors(neighbor)]
+                    neighbor_list.append(neighbor)
+                    neighbor_list = list(set(neighbor_list))
+                    neighbor_dic[j] = neighbor_list
+            node_dic[key] = neighbor_dic[order - 1]
+        
+        for item in node_dic[keylist[0]]:
+            i= 1 
+            while item in node_dic[keylist[i]] :
+                i += 1
+                if i == len(node_dic):
+                    break
             if i == len(node_dic):
-                break
-        if i == len(node_dic):
-            inter_list.append(item)
+                inter_list.append(item)
+                    
+        ratio = round(len(inter_list)/len(list(G.nodes())),3)
+        
+        weighted_inter = 0
+        weighted_total = 0
+        
+        for node1 in inter_list:
+            for node2 in inter_list :
+                if nx.has_path(G, node1, node2):
+                    nodes = nx.dijkstra_path(G, node1, node2)
+                    if len (nodes) <= order + 1:
+                        while len(nodes) > 1:
+                            weighted_inter += 1/G[nodes[0]][nodes[1]]['weight']
+                            nodes.pop(0)
+                    else:
+                        pass
+                    
+        for node1 in G.nodes():
+            for node2 in G.nodes() :
+                if nx.has_path(G, node1, node2):
+                    nodes = nx.dijkstra_path(G, node1, node2)
+                    if len(nodes) <= order + 1:
+                        while len(nodes) > 1:
+                            weighted_total += 1/G[nodes[0]][nodes[1]]['weight']
+                            nodes.pop(0)
+                    else:
+                        pass
                 
-    ratio = round(len(inter_list)/len(list(G.nodes())),3)
-    
-    weighted_inter = 0
-    weighted_total = 0
-    
-    for node1 in inter_list:
-        for node2 in inter_list :
-            if nx.has_path(G, node1, node2):
-                nodes = nx.dijkstra_path(G, node1, node2)
-                if len (nodes) <= order + 1:
-                    while len(nodes) > 1:
-                        weighted_inter += 1/G[nodes[0]][nodes[1]]['weight']
-                        nodes.pop(0)
-                else:
-                    pass
-                
-    for node1 in G.nodes():
-        for node2 in G.nodes() :
-            if nx.has_path(G, node1, node2):
-                nodes = nx.dijkstra_path(G, node1, node2)
-                if len(nodes) <= order + 1:
-                    while len(nodes) > 1:
-                        weighted_total += 1/G[nodes[0]][nodes[1]]['weight']
-                        nodes.pop(0)
-                else:
-                    pass
-            
-    weighted_ratio = round(weighted_inter/weighted_total, 3)
-    
-    return inter_list, ratio, weighted_ratio
+        weighted_ratio = round(weighted_inter/weighted_total, 3)
+        
+        return inter_list, ratio, weighted_ratio
 
 
 
@@ -349,58 +358,62 @@ def full_intersection(keylist, path, poslist, n, arg, dtype, method, order):
     inter_list = []
     node_dic = {}
     
-    for key in keylist :
-        neighbor_dic = {}
-        neighbor_list = [node for node in G.neighbors(key)]
-        neighbor_list.append(key)
-        neighbor_dic[0] = neighbor_list
-        for j in range(1,order):
-            for neighbor in neighbor_dic[j-1]:
-                neighbor_list += [nodebis for nodebis in G.neighbors(neighbor)]
-                neighbor_list.append(neighbor)
-                neighbor_list = list(set(neighbor_list))
-                neighbor_dic[j] = neighbor_list
-        node_dic[key] = neighbor_dic[order - 1]
-    
-    for item in node_dic[keylist[0]]:
-        i= 1
-        while item in node_dic[keylist[i]] :
-            i += 1
+    if len(G.nodes()) == 1 or len(keylist) < 2:
+        return inter_list, 0, 0
+
+    else :
+        for key in keylist :
+            neighbor_dic = {}
+            neighbor_list = [node for node in G.neighbors(key)]
+            neighbor_list.append(key)
+            neighbor_dic[0] = neighbor_list
+            for j in range(1,order):
+                for neighbor in neighbor_dic[j-1]:
+                    neighbor_list += [nodebis for nodebis in G.neighbors(neighbor)]
+                    neighbor_list.append(neighbor)
+                    neighbor_list = list(set(neighbor_list))
+                    neighbor_dic[j] = neighbor_list
+            node_dic[key] = neighbor_dic[order - 1]
+        
+        for item in node_dic[keylist[0]]:
+            i= 1 
+            while item in node_dic[keylist[i]] :
+                i += 1
+                if i == len(node_dic):
+                    break
             if i == len(node_dic):
-                break
-        if i == len(node_dic):
-            inter_list.append(item)
+                inter_list.append(item)
+                    
+        ratio = round(len(inter_list)/len(list(G.nodes())),3)
+        
+        weighted_inter = 0
+        weighted_total = 0
+        
+        for node1 in inter_list:
+            for node2 in inter_list :
+                if nx.has_path(G, node1, node2):
+                    nodes = nx.dijkstra_path(G, node1, node2)
+                    if len (nodes) <= order + 1:
+                        while len(nodes) > 1:
+                            weighted_inter += 1/G[nodes[0]][nodes[1]]['weight']
+                            nodes.pop(0)
+                    else:
+                        pass
+                    
+        for node1 in G.nodes():
+            for node2 in G.nodes() :
+                if nx.has_path(G, node1, node2):
+                    nodes = nx.dijkstra_path(G, node1, node2)
+                    if len(nodes) <= order + 1:
+                        while len(nodes) > 1:
+                            weighted_total += 1/G[nodes[0]][nodes[1]]['weight']
+                            nodes.pop(0)
+                    else:
+                        pass
                 
-    ratio = round(len(inter_list)/len(list(G.nodes())),3)
-    
-    weighted_inter = 0
-    weighted_total = 0
-    
-    for node1 in inter_list:
-        for node2 in inter_list :
-            if nx.has_path(G, node1, node2):
-                nodes = nx.dijkstra_path(G, node1, node2)
-                if len (nodes) <= order + 1:
-                    while len(nodes) > 1:
-                        weighted_inter += 1/G[nodes[0]][nodes[1]]['weight']
-                        nodes.pop(0)
-                else:
-                    pass
-                
-    for node1 in G.nodes():
-        for node2 in G.nodes() :
-            if nx.has_path(G, node1, node2):
-                nodes = nx.dijkstra_path(G, node1, node2)
-                if len(nodes) <= order + 1:
-                    while len(nodes) > 1:
-                        weighted_total += 1/G[nodes[0]][nodes[1]]['weight']
-                        nodes.pop(0)
-                else:
-                    pass
-            
-    weighted_ratio = round(weighted_inter/weighted_total, 3)
-    
-    return inter_list, ratio, weighted_ratio
+        weighted_ratio = round(weighted_inter/weighted_total, 3)
+        
+        return inter_list, ratio, weighted_ratio
 
 
 

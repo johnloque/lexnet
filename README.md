@@ -9,7 +9,7 @@ Please note lexnet's implementation is strictly minimal for now : it doesn't hav
 ### Main functions
 
 - **lexnet**(keylist, path, poslist, n, arg, dtype, method) -> NetworkX Graph
-    - <ins>keylist</ins> : list containing the keywords whose lexical field will be visualized on the graph. keylist items have to be character strings formatted in the following way : 'word POS'. keylist items should always occur at least once in the input text (and their POS should be in poslist), otherwise an error will be raised.
+    - <ins>keylist</ins> : list containing the keywords whose lexical field will be visualized on the graph. keylist items have to be character strings formatted in the following way : 'word POS'. For each word, POS is the 3 first letters found in the 'POS' column. Please make sure you type the right POS, otherwise the item will not be taken into account.
     - <ins>path</ins> : character string containing the absolute path to the .tsv file you want to use as input, or the absolute path to the directory containing all the .tsv files (and only those files) you want to use as input.
     - <ins>poslist</ins> : list containing the POS you're interested in. In other terms, lexnet's analysis will be performed on the sole words that have a POS whose general category (i.e. whose first three letters in the 'POS' column from the input .tsv file) match a poslist item. poslist items have to be 3-character strings. poslist items have to occur at least once in the input text, otherwise an error will be raised. at the moment, lexnet only handles poslists with maximum 3 items (cf visualization information).
     - <ins>n</ins> : integer that determines the size of the keyword-centered intervals in which the cooccurrences are counted.
@@ -17,7 +17,7 @@ Please note lexnet's implementation is strictly minimal for now : it doesn't hav
     - <ins>character string</ins> : character string that determines which edge will be drawn on the resulting graph : can be basically 'key', to display the sole edges included in the keywords' degrees, or 'all', to display the other edges as well. Other values will raise an error.
 
 - **intersection**(keylist, G, order) -> list of shared nodes, intersection rate, weighted intersection rate
-    - <ins>keylist</ins> : same object as described above, i.e. the keywords for the different lexical fields to intersect. keylist items should always belong to G's nodes, otherwise an error will be raised.
+    - <ins>keylist</ins> : same object as described above, i.e. the keywords for the different lexical fields to intersect. For this reason, there should always be at least 2 keylist items in order to use this function.
     - <ins>G</ins> : any graph returned by the lexnet() function.
     - <ins>order</ins> : integer that determines the maximum length of the path between a keyword and any word that belongs to its lexical field (increasing order will increase intersection rates).
 
