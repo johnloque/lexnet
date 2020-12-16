@@ -296,17 +296,11 @@ def intersection(keylist, G, order):
 
     else :
         for key in keylist :
-            neighbor_dic = {}
-            neighbor_list = [node for node in G.neighbors(key)]
-            neighbor_list.append(key)
-            neighbor_dic[0] = neighbor_list
-            for j in range(1,order):
-                for neighbor in neighbor_dic[j-1]:
-                    neighbor_list += [nodebis for nodebis in G.neighbors(neighbor)]
-                    neighbor_list.append(neighbor)
-                    neighbor_list = list(set(neighbor_list))
-                    neighbor_dic[j] = neighbor_list
-            node_dic[key] = neighbor_dic[order - 1]
+            neighbor_list = []
+            for node in G.nodes :
+                if nx.shortest_path_length(G, key, node) <= order :
+                    neighbor_list.append(node)
+            node_dic[key] = neighbor_list
         
         for item in node_dic[keylist[0]]:
             i= 1 
@@ -363,17 +357,11 @@ def full_intersection(keylist, path, poslist, n, arg, dtype, method, order):
 
     else :
         for key in keylist :
-            neighbor_dic = {}
-            neighbor_list = [node for node in G.neighbors(key)]
-            neighbor_list.append(key)
-            neighbor_dic[0] = neighbor_list
-            for j in range(1,order):
-                for neighbor in neighbor_dic[j-1]:
-                    neighbor_list += [nodebis for nodebis in G.neighbors(neighbor)]
-                    neighbor_list.append(neighbor)
-                    neighbor_list = list(set(neighbor_list))
-                    neighbor_dic[j] = neighbor_list
-            node_dic[key] = neighbor_dic[order - 1]
+            neighbor_list = []
+            for node in G.nodes :
+                if nx.shortest_path_length(G, key, node) <= order :
+                    neighbor_list.append(node)
+            node_dic[key] = neighbor_list
         
         for item in node_dic[keylist[0]]:
             i= 1 
