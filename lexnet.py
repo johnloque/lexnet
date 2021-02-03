@@ -294,6 +294,10 @@ def intersection(keylist, G, order):
     if len(G.nodes()) == 1 or len(keylist) < 2:
         return inter_list, 0, 0
 
+    for key in keylist:
+        if key not in G.nodes():
+            return inter_list, 0, 0
+
     else :
         for key in keylist :
             neighbor_list = []
@@ -354,6 +358,10 @@ def full_intersection(keylist, path, poslist, n, arg, dtype, method, order):
     
     if len(G.nodes()) == 1 or len(keylist) < 2:
         return inter_list, 0, 0
+
+    for key in keylist:
+        if key not in G.nodes():
+            return inter_list, 0, 0
 
     else :
         for key in keylist :
