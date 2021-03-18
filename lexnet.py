@@ -5,6 +5,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import os
 from scipy.stats import hypergeom
+from sklearn import (manifold, decomposition)
 
 
 
@@ -187,7 +188,7 @@ def fill_stat_df(df, freq_df, cofreq_df, coocc_list, n, arg, dtype):
 
 
 
-def build_graph(keylist, poslist, stat_df, freq_df, dtype, *args): 
+def build_graph(keylist, poslist, stat_df, freq_df, dtype, method, layout): 
 
     G = nx.Graph()
     
@@ -221,7 +222,20 @@ def build_graph(keylist, poslist, stat_df, freq_df, dtype, *args):
     emain = [(u,v) for (u,v,d) in G.edges(data=True) if d['capacity'] == 'main']
     esec = [(u,v) for (u,v,d) in G.edges(data=True) if d['capacity'] == 'sec'] 
     
-    pos = nx.kamada_kawai_layout(G)
+    
+    if layout == 'tsne' :
+        tsne = manifold.TSNE(n_components=2, random_state = 0)
+        X_tsne = tsne.fit_transform(stat_df)
+        tsdf = pd.DataFrame(X_tsne, index = stat_df.index)
+
+        pos = {}
+
+        for node in G.nodes():
+            pos[node] = (tsdf.loc[node,0], tsdf.loc[node,1])
+            
+    else :
+        pos = nx.kamada_kawai_layout(G)        
+    
     edges = G.edges()
     weights_main = [G[u][v]['weight'] for u,v in emain]
     weights_sec = [G[u][v]['weight'] for u,v in esec]
@@ -231,7 +245,7 @@ def build_graph(keylist, poslist, stat_df, freq_df, dtype, *args):
     for n in range(len(widths_main)) :
         widths_main[n] =  1 / widths_main[n]
         
-    if 'all' in args : 
+    if method == 'all' : 
         widths_sec = weights_sec
         for n in range(len(widths_sec)) :
             widths_sec[n] =  1 / widths_sec[n]
@@ -241,7 +255,7 @@ def build_graph(keylist, poslist, stat_df, freq_df, dtype, *args):
     nx.draw_networkx_nodes(G, pos, node_color = colors, node_size = sizes, ax=ax)
     nx.draw_networkx_edges(G, pos, edgelist = emain, width = widths_main, edge_color = '#f59c72')
 
-    if 'all' in args :
+    if method == 'all' :
         nx.draw_networkx_edges(G, pos, edgelist=esec, width = widths_sec, edge_color = '#fbe3d3', style='dashed')
 
     nx.draw_networkx_labels(G, pos, labels, font_size = 12, font_family = 'sans-serif')
@@ -254,7 +268,7 @@ def build_graph(keylist, poslist, stat_df, freq_df, dtype, *args):
 
 
 
-def lexnet(keylist, path, poslist, n, arg, dtype, method):
+def lexnet(keylist, path, poslist, n, arg, dtype, method, layout):
 
     df = load_tsv(path)
     df = select_tokens(df, poslist, drop= True)
@@ -281,7 +295,7 @@ def lexnet(keylist, path, poslist, n, arg, dtype, method):
 
         stat_df = fill_stat_df(df, freq_df, cofreq_df, coocc_list, n, arg, dtype)
 
-        return build_graph(keylist, poslist, stat_df, freq_df, dtype, method)
+        return build_graph(keylist, poslist, stat_df, freq_df, dtype, method, layout)
 
 
 
@@ -354,7 +368,7 @@ def intersection(keylist, G, order):
 
 def full_intersection(keylist, path, poslist, n, arg, dtype, method, order):
 
-    G = lexnet(keylist, path, poslist, n, arg, dtype, method)
+    G = lexnet(keylist, path, poslist, n, arg, dtype, method, 'tsne')
         
     inter_list = []
     node_dic = {}

@@ -8,13 +8,14 @@ Please note lexnet's implementation is strictly minimal for now : it doesn't hav
 
 ### Main functions
 
-- **lexnet**(keylist, path, poslist, n, arg, dtype, method) -> NetworkX Graph
+- **lexnet**(keylist, path, poslist, n, arg, dtype, method, layout) -> NetworkX Graph
     - <ins>keylist</ins> : list containing the keywords whose lexical field will be visualized on the graph. keylist items have to be character strings formatted in the following way : 'word POS'. For each word, POS is the 3 first letters found in the 'POS' column. Please make sure you type the right POS, otherwise the item will not be taken into account.
     - <ins>path</ins> : character string containing the absolute path to the .tsv file you want to use as input, or the absolute path to the directory containing all the .tsv files (and only those files) you want to use as input.
     - <ins>poslist</ins> : list containing the POS you're interested in. In other terms, lexnet's analysis will be performed on the sole words that have a POS whose general category (i.e. whose first three letters in the 'POS' column from the input .tsv file) match a poslist item. poslist items have to be 3-character strings. poslist items have to occur at least once in the input text, otherwise an error will be raised. at the moment, lexnet only handles poslists with maximum 3 items (cf visualization information).
     - <ins>n</ins> : integer that determines the size of the keyword-centered intervals in which the cooccurrences are counted.
     - <ins>dtype</ins> : character string that determines the 'nature' of keylist items, and therefore of nodes : can be basically 'lemma', i.e. maximum one node for a given lemma, or 'form', i.e. possibly several nodes for a given lemma with respect to the different forms of this lemma occurring in the text. Other values will raise an error.
-    - <ins>character string</ins> : character string that determines which edge will be drawn on the resulting graph : can be basically 'key', to display the sole edges included in the keywords' degrees, or 'all', to display the other edges as well. Other values will raise an error.
+    - <ins>method</ins> : character string that determines which edge will be drawn on the resulting graph : can be basically 'key', to display the sole edges included in the keywords' degrees, or 'all', to display the other edges as well. Other values will raise an error.
+    - <ins>layout</ins> : character string that determines the position of nodes in the graph : if set to 'tsne', nodes will be laid out with respect to a t-sne dimensionality reduction performed on the significance co-occurrence matrix, otherwise the default kamada-layout will be applied.
 
 - **intersection**(keylist, G, order) -> list of shared nodes, intersection rate, weighted intersection rate
     - <ins>keylist</ins> : same object as described above, i.e. the keywords for the different lexical fields to intersect. For this reason, there should always be at least 2 keylist items in order to use this function.
