@@ -17,7 +17,7 @@ Please note lexnet's implementation is strictly minimal for now : it doesn't hav
     - <ins>method</ins> : character string that determines which edge will be drawn on the resulting graph : can be basically 'key', to display the sole edges included in the keywords' degrees, or 'all', to display the other edges as well. Other values will raise an error.
     - <ins>layout</ins> : character string that determines the position of nodes in the graph : if set to 'tsne', nodes will be laid out with respect to a t-sne dimensionality reduction performed on the significance co-occurrence matrix, otherwise the default kamada-layout will be applied.
 
-- **intersection**(keylist, G, order) -> list of shared nodes, intersection rate, weighted intersection rate
+- **intersection**(keylist, G, order) -> list of shared nodes, intersection rate (Jaccard index), weighted intersection rate
     - <ins>keylist</ins> : same object as described above, i.e. the keywords for the different lexical fields to intersect. For this reason, there should always be at least 2 keylist items in order to use this function.
     - <ins>G</ins> : any graph returned by the lexnet() function.
     - <ins>order</ins> : integer that determines the maximum length of the path between a keyword and any word that belongs to its lexical field (increasing order will increase intersection rates).
