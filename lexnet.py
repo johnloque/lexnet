@@ -261,6 +261,15 @@ def build_graph(keylist, poslist, stat_df, freq_df, dtype, method, layout):
     nx.draw_networkx_labels(G, pos, labels, font_size = 12, font_family = 'sans-serif')
     
     plt.axis('off')
+
+    axis = plt.gca()
+    
+    x_bounds = [1.2*x for x in axis.get_xlim()]
+    y_bounds = [1.2*y for y in axis.get_ylim()]
+
+    axis.set_xlim(x_bounds)
+    axis.set_ylim(y_bounds)
+
     plt.show()
     
     return G
