@@ -350,7 +350,7 @@ def intersection(keylist, G, order):
             for node2 in inter_list :
                 if nx.has_path(G, node1, node2):
                     nodes = nx.dijkstra_path(G, node1, node2)
-                    if len (nodes) <= order + 1:
+                    if len(nodes) <= order + 1:
                         while len(nodes) > 1:
                             weighted_inter += 1/G[nodes[0]][nodes[1]]['weight']
                             nodes.pop(0)
